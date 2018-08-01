@@ -51,6 +51,6 @@
 
 typedef unsigned short tile_t;
 
-void tile(int x, int y, tile_t tand, tile_t txor);
+tile_t dtile(int x, int y, tile_t clr, tile_t flip);
 
 #endif

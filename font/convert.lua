@@ -10,7 +10,7 @@ print("Converting font...")
 local font = io.open("raw.dds")
 font:seek("cur", 128)
 
-local src = io.open("../src/display/font.h", "w")
+local src = io.open("src.h", "w")
 src:write("static const char g_font[]={")
 
 local byte = 0

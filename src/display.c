@@ -1,7 +1,33 @@
-#include "../display.h"
-#include "paint.h"
+#include "display.h"
+#include "../font/src.h"
 
 #define CLASS_NAME "roguelike"
+
+#define FONT_SIZE 8
+#define SCALE (FONT_SIZE * 3)
+
+static HDC g_windc;
+static HDC g_memdc;
+static tile_t g_tiles[WIDTH * HEIGHT];
+
+static const COLORREF g_colors[] = {
+	0x00000000,
+	0x00AA0000,
+	0x0000AA00,
+	0x00AAAA00,
+	0x000000AA,
+	0x00AA00AA,
+	0x000055AA,
+	0x00AAAAAA,
+	0x00555555,
+	0x00FF5555,
+	0x0055FF55,
+	0x00FFFF55,
+	0x005555FF,
+	0x00FF55FF,
+	0x0055FFFF,
+	0x00FFFFFF
+};
 
 static void error() {
 	DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER;
@@ -26,15 +52,27 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 	return 0;
 }
 
-void entry() {
+void display__entry() {
 	SetLastError(0);
 	HINSTANCE instance = GetModuleHandle(NULL);
 
-	WNDCLASS wndclass = {CS_OWNDC | CS_SAVEBITS};
-	wndclass.lpszClassName = CLASS_NAME;
-	wndclass.hInstance = instance;
-	wndclass.lpfnWndProc = window_proc;
-	wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	HBITMAP bitmap = CreateBitmap(FONT_SIZE * 0xFF, FONT_SIZE, 1, 1, g_font);
+	if (bitmap == NULL) {
+		error();
+	}
+
+	WNDCLASS wndclass = {
+		CS_OWNDC | CS_SAVEBITS,
+		window_proc,
+		0,
+		0,
+		instance,
+		NULL,
+		LoadCursor(NULL, IDC_ARROW),
+		CreateSolidBrush(0),
+		NULL,
+		CLASS_NAME
+	};
 	if (RegisterClass(&wndclass) == 0) {
 		error();
 	}
@@ -69,9 +107,9 @@ void entry() {
 		error();
 	}
 
-	if (!paint_init(window)) {
-		error();
-	}
+	g_windc = GetDC(window);
+	g_memdc = CreateCompatibleDC(g_windc);
+	SelectObject(g_memdc, bitmap);
 
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
@@ -79,4 +117,31 @@ void entry() {
 	}
 
 	ExitProcess(0);
+}
+
+tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
+	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
+		return 0;
+	}
+
+	int index = y * WIDTH + x;
+	tile_t tile = g_tiles[index];
+	g_tiles[index] = (tile & ~clr) ^ flip;
+
+	SetTextColor(g_windc, g_colors[(tile & TILE_BG) >> 8]);
+	SetBkColor(g_windc, g_colors[(tile & TILE_FG) >> 12]);
+	StretchBlt(
+		g_windc,
+		x * SCALE,
+		y * SCALE,
+		SCALE,
+		SCALE,
+		g_memdc,
+		(g_tiles[index] & TILE_CHAR) * FONT_SIZE,
+		0,
+		FONT_SIZE,
+		FONT_SIZE,
+		SRCCOPY
+	);
+	return tile;
 }

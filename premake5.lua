@@ -7,7 +7,7 @@ project "roguelike"
 	kind "ConsoleApp"
 	language "C"
 	cdialect "C99"
-	files "src/**"
+	files "src/**.c"
 	objdir "bin/%{cfg.buildcfg}/obj"
 	targetdir "bin/%{cfg.buildcfg}"
 
@@ -18,7 +18,7 @@ project "roguelike"
 	linkoptions {
 		"-mwindows",
 		"-nostdlib",
-		"-Wl,-e_entry"
+		"-Wl,-e_display__entry"
 	}
 
 	links {
@@ -32,3 +32,6 @@ project "roguelike"
 
 	filter "Release"
 		optimize "Size"
+		postbuildcommands {
+			"upx --ultra-brute bin/%{cfg.buildcfg}/%{prj.name}.exe"
+		}

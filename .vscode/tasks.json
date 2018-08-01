@@ -8,14 +8,6 @@
 			"args": ["gmake"]
 		},
 		{
-			"label": "Clean",
-			"type": "shell",
-			"dependsOn": ["Premake"],
-			"command": "make",
-			"args": ["-j", "clean"],
-			"problemMatcher": []
-		},
-		{
 			"label": "Debug",
 			"type": "shell",
 			"dependsOn": ["Premake"],
@@ -35,6 +27,22 @@
 			"args": ["-j", "config=release"],
 			"problemMatcher": "$gcc",
 			"group": "build"
+		},
+		{
+			"label": "Clean",
+			"type": "shell",
+			"dependsOn": ["Premake"],
+			"command": "make",
+			"args": ["-j", "clean"],
+			"problemMatcher": []
+		},
+		{
+			"label": "Clean Release",
+			"type": "shell",
+			"dependsOn": ["Premake"],
+			"command": "make",
+			"args": ["-j", "config=release", "clean"],
+			"problemMatcher": []
 		}
 	]
 }

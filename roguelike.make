@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lkernel32 -luser32 -lgdi32
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -mwindows -nostdlib -Wl,-e_entry
+  ALL_LDFLAGS += $(LDFLAGS) -mwindows -nostdlib -Wl,-e_display__entry
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -51,13 +51,15 @@ ifeq ($(config),release)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lkernel32 -luser32 -lgdi32
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -s -mwindows -nostdlib -Wl,-e_entry
+  ALL_LDFLAGS += $(LDFLAGS) -s -mwindows -nostdlib -Wl,-e_display__entry
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
   define PRELINKCMDS
   endef
   define POSTBUILDCMDS
+	@echo Running postbuild commands
+	upx --ultra-brute bin/Release/roguelike.exe
   endef
 all: prebuild prelink $(TARGET)
 	@:
@@ -65,8 +67,7 @@ all: prebuild prelink $(TARGET)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/paint.o \
-	$(OBJDIR)/window.o \
+	$(OBJDIR)/display.o \
 	$(OBJDIR)/main.o \
 
 RESOURCES := \
@@ -119,15 +120,7 @@ endif
 	$(SILENT) $(CC) -x c-header $(ALL_CFLAGS) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
 endif
 
-$(OBJDIR)/paint.o: src/display/paint.c
-	@echo $(notdir $<)
-ifeq (posix,$(SHELLTYPE))
-	$(SILENT) mkdir -p $(OBJDIR)
-else
-	$(SILENT) mkdir $(subst /,\\,$(OBJDIR))
-endif
-	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/window.o: src/display/window.c
+$(OBJDIR)/display.o: src/display.c
 	@echo $(notdir $<)
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) mkdir -p $(OBJDIR)
