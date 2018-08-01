@@ -6,6 +6,9 @@
 #define FONT_SIZE 8
 #define SCALE (FONT_SIZE * 3)
 
+_Bool dkey(int key);
+
+static HWND g_window;
 static HDC g_windc;
 static HDC g_memdc;
 static tile_t g_tiles[WIDTH * HEIGHT];
@@ -33,16 +36,28 @@ static void error() {
 	DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER;
 	char* error;
 	if (FormatMessage(flags, NULL, GetLastError(), 0, (char*)&error, 0, NULL) != 0) {
-		MessageBox(NULL, error, NULL, MB_ICONERROR);
+		MessageBox(g_window, error, NULL, MB_ICONERROR);
 		LocalFree(error);
 	}
 	ExitProcess(1);
+}
+
+static void key(int key) {
+	if (!dkey(key)) {
+		DestroyWindow(g_window);
+	}
 }
 
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
 	static int fun = 0;
 
 	switch (msg) {
+		case WM_KEYDOWN:
+			key(wpm);
+			break;
+		case WM_CLOSE:
+			key(VK_ESCAPE);
+			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
 			break;
@@ -90,7 +105,7 @@ void display__entry() {
 	};
 	AdjustWindowRect(&rect, style, FALSE);
 
-	HWND window = CreateWindow(
+	g_window = CreateWindow(
 		CLASS_NAME,
 		"Roguelike",
 		style,
@@ -103,19 +118,19 @@ void display__entry() {
 		instance,
 		NULL
 	);
-	if (window == NULL) {
+	if (g_window == NULL) {
 		error();
 	}
 
-	g_windc = GetDC(window);
+	g_windc = GetDC(g_window);
 	g_memdc = CreateCompatibleDC(g_windc);
 	SelectObject(g_memdc, bitmap);
 
+	key(0);
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
 		DispatchMessage(&msg);
 	}
-
 	ExitProcess(0);
 }
 
@@ -125,11 +140,12 @@ tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
 	}
 
 	int index = y * WIDTH + x;
-	tile_t tile = g_tiles[index];
-	g_tiles[index] = (tile & ~clr) ^ flip;
+	tile_t oldt = g_tiles[index];
+	tile_t newt = (oldt & ~clr) ^ flip;
+	g_tiles[index] = newt;
 
-	SetTextColor(g_windc, g_colors[(tile & TILE_BG) >> 8]);
-	SetBkColor(g_windc, g_colors[(tile & TILE_FG) >> 12]);
+	SetTextColor(g_windc, g_colors[(newt & TILE_BG) >> 8]);
+	SetBkColor(g_windc, g_colors[(newt & TILE_FG) >> 12]);
 	StretchBlt(
 		g_windc,
 		x * SCALE,
@@ -137,11 +153,11 @@ tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
 		SCALE,
 		SCALE,
 		g_memdc,
-		(g_tiles[index] & TILE_CHAR) * FONT_SIZE,
+		(newt & TILE_CHAR) * FONT_SIZE,
 		0,
 		FONT_SIZE,
 		FONT_SIZE,
 		SRCCOPY
 	);
-	return tile;
+	return oldt;
 }

@@ -1,9 +1,4 @@
---[[
-	Very rough dds reader that assumes:
-	 - it is a dds file
-	 - it is 16bpp
-	 - it is uncompressed
-]]
+-- Assumes that raw.dds is A5G6B5 uncompressed.
 
 print("Converting font...")
 

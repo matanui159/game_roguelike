@@ -1,4 +1,5 @@
 #include "display.h"
 
-void roguelike() {
+_Bool dkey(int key) {
+	return key != VK_ESCAPE;
 }
