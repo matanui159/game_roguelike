@@ -1,0 +1,16 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Main",
+			"type": "cppdbg",
+			"request": "launch",
+			"MIMode": "gdb",
+			"miDebuggerPath": "gdb.exe",
+			"program": "${workspaceFolder}/bin/Debug/roguelike",
+			"args": [],
+			"cwd": "${workspaceFolder}",
+			"preLaunchTask": "Debug"
+		}
+	]
+}

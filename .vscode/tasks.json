@@ -1,0 +1,40 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Premake",
+			"type": "shell",
+			"command": "premake5",
+			"args": ["gmake"]
+		},
+		{
+			"label": "Clean",
+			"type": "shell",
+			"dependsOn": ["Premake"],
+			"command": "make",
+			"args": ["-j", "clean"],
+			"problemMatcher": []
+		},
+		{
+			"label": "Debug",
+			"type": "shell",
+			"dependsOn": ["Premake"],
+			"command": "make",
+			"args": ["-j"],
+			"problemMatcher": "$gcc",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Release",
+			"type": "shell",
+			"dependsOn": ["Premake"],
+			"command": "make",
+			"args": ["-j", "config=release"],
+			"problemMatcher": "$gcc",
+			"group": "build"
+		}
+	]
+}
