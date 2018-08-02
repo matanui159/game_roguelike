@@ -1,5 +1,5 @@
-#ifndef ENGINE_H_
-#define ENGINE_H_
+#ifndef DISPLAY_H_
+#define DISPLAY_H_
 
 #ifdef UNICODE
 #	undef UNICODE

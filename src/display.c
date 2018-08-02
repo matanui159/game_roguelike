@@ -8,7 +8,6 @@
 
 _Bool dkey(int key);
 
-static HWND g_window;
 static HDC g_windc;
 static HDC g_memdc;
 static tile_t g_tiles[WIDTH * HEIGHT];
@@ -32,19 +31,19 @@ static const COLORREF g_colors[] = {
 	0x00FFFFFF
 };
 
-static void error() {
+static void error(HWND wnd) {
 	DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_ALLOCATE_BUFFER;
 	char* error;
 	if (FormatMessage(flags, NULL, GetLastError(), 0, (char*)&error, 0, NULL) != 0) {
-		MessageBox(g_window, error, NULL, MB_ICONERROR);
+		MessageBox(wnd, error, NULL, MB_ICONERROR);
 		LocalFree(error);
 	}
 	ExitProcess(1);
 }
 
-static void key(int key) {
+static void key(HWND wnd, int key) {
 	if (!dkey(key)) {
-		DestroyWindow(g_window);
+		DestroyWindow(wnd);
 	}
 }
 
@@ -53,10 +52,10 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 
 	switch (msg) {
 		case WM_KEYDOWN:
-			key(wpm);
+			key(wnd, wpm);
 			break;
 		case WM_CLOSE:
-			key(VK_ESCAPE);
+			key(wnd, VK_ESCAPE);
 			break;
 		case WM_DESTROY:
 			PostQuitMessage(0);
@@ -73,7 +72,7 @@ void display__entry() {
 
 	HBITMAP bitmap = CreateBitmap(FONT_SIZE * 0xFF, FONT_SIZE, 1, 1, g_font);
 	if (bitmap == NULL) {
-		error();
+		error(NULL);
 	}
 
 	WNDCLASS wndclass = {
@@ -89,7 +88,7 @@ void display__entry() {
 		CLASS_NAME
 	};
 	if (RegisterClass(&wndclass) == 0) {
-		error();
+		error(NULL);
 	}
 
 	DWORD style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE;
@@ -105,7 +104,7 @@ void display__entry() {
 	};
 	AdjustWindowRect(&rect, style, FALSE);
 
-	g_window = CreateWindow(
+	HWND window = CreateWindow(
 		CLASS_NAME,
 		"Roguelike",
 		style,
@@ -118,15 +117,15 @@ void display__entry() {
 		instance,
 		NULL
 	);
-	if (g_window == NULL) {
-		error();
+	if (window == NULL) {
+		error(NULL);
 	}
 
-	g_windc = GetDC(g_window);
+	g_windc = GetDC(window);
 	g_memdc = CreateCompatibleDC(g_windc);
 	SelectObject(g_memdc, bitmap);
 
-	key(0);
+	key(window, 0);
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
 		DispatchMessage(&msg);
