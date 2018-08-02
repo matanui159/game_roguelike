@@ -19,8 +19,8 @@ ifeq ($(config),debug)
   INCLUDES +=
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -std=c99 -ffreestanding
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g -ffreestanding
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -std=c99
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -g
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lkernel32 -luser32 -lgdi32
   LDDEPS +=
@@ -46,12 +46,12 @@ ifeq ($(config),release)
   INCLUDES +=
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
-  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -Os -std=c99 -ffreestanding
-  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -Os -ffreestanding
+  ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -flto -Os -std=c99
+  ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -flto -Os
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -lkernel32 -luser32 -lgdi32
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -s -mwindows -nostdlib -Wl,-e_display__entry
+  ALL_LDFLAGS += $(LDFLAGS) -flto -mwindows -s -nostdlib -Wl,-e_display__entry
   LINKCMD = $(CC) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -69,6 +69,7 @@ endif
 OBJECTS := \
 	$(OBJDIR)/display.o \
 	$(OBJDIR)/main.o \
+	$(OBJDIR)/stdmem.o \
 
 RESOURCES := \
 
@@ -129,6 +130,14 @@ else
 endif
 	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/main.o: src/main.c
+	@echo $(notdir $<)
+ifeq (posix,$(SHELLTYPE))
+	$(SILENT) mkdir -p $(OBJDIR)
+else
+	$(SILENT) mkdir $(subst /,\\,$(OBJDIR))
+endif
+	$(SILENT) $(CC) $(ALL_CFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/stdmem.o: src/stdmem.c
 	@echo $(notdir $<)
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) mkdir -p $(OBJDIR)

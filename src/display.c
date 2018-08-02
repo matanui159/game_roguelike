@@ -1,4 +1,5 @@
 #include "display.h"
+#include "stdmem.h"
 #include "../font/src.h"
 
 #define CLASS_NAME "roguelike"
@@ -6,11 +7,18 @@
 #define FONT_SIZE 8
 #define SCALE (FONT_SIZE * 3)
 
-_Bool dkey(int key);
+typedef struct stack_t {
+	scene_t scene;
+	void* data;
+	struct stack_t* prev;
+} stack_t;
+
+void dmain(int key, void* data);
 
 static HDC g_windc;
 static HDC g_memdc;
 static tile_t g_tiles[WIDTH * HEIGHT];
+static stack_t* g_stack;
 
 static const COLORREF g_colors[] = {
 	0x00000000,
@@ -41,10 +49,8 @@ static void error(HWND wnd) {
 	ExitProcess(1);
 }
 
-static void key(HWND wnd, int key) {
-	if (!dkey(key)) {
-		DestroyWindow(wnd);
-	}
+static void stack_scene(int key) {
+	g_stack->scene(key, g_stack->data);
 }
 
 static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) {
@@ -52,14 +58,10 @@ static LRESULT CALLBACK window_proc(HWND wnd, UINT msg, WPARAM wpm, LPARAM lpm) 
 
 	switch (msg) {
 		case WM_KEYDOWN:
-			key(wnd, wpm);
+ 			stack_scene(wpm);
 			break;
 		case WM_CLOSE:
-			key(wnd, VK_ESCAPE);
-			break;
-		case WM_DESTROY:
-			PostQuitMessage(0);
-			break;
+			ExitProcess(0);
 		default:
 			return DefWindowProc(wnd, msg, wpm, lpm);
 	}
@@ -104,7 +106,7 @@ void display__entry() {
 	};
 	AdjustWindowRect(&rect, style, FALSE);
 
-	HWND window = CreateWindow(
+	HWND wnd = CreateWindow(
 		CLASS_NAME,
 		"Roguelike",
 		style,
@@ -117,20 +119,22 @@ void display__entry() {
 		instance,
 		NULL
 	);
-	if (window == NULL) {
+	if (wnd == NULL) {
 		error(NULL);
 	}
 
-	g_windc = GetDC(window);
+	g_windc = GetDC(wnd);
 	g_memdc = CreateCompatibleDC(g_windc);
 	SelectObject(g_memdc, bitmap);
 
-	key(window, 0);
+	dscene(dmain, NULL);
 	MSG msg;
-	while (GetMessage(&msg, NULL, 0, 0) > 0) {
+	for (;;) {
+		if (GetMessage(&msg, NULL, 0, 0) < 0) {
+			error(wnd);
+		}
 		DispatchMessage(&msg);
 	}
-	ExitProcess(0);
 }
 
 tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
@@ -159,4 +163,24 @@ tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
 		SRCCOPY
 	);
 	return oldt;
+}
+
+void dscene(scene_t scene, void* data) {
+	if (scene == NULL) {
+		stack_t* prev = g_stack->prev;
+		free(g_stack);
+		g_stack = NULL;
+		g_stack = prev;
+		if (g_stack == NULL) {
+			ExitProcess(0);
+		}
+	} else {
+		stack_t* next = malloc(sizeof(stack_t));
+		next->scene = scene;
+		next->data = data;
+		next->prev = g_stack;
+		g_stack = next;
+		stack_scene(VK_INIT);
+	}
+	stack_scene(VK_DRAW);
 }

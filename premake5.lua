@@ -4,19 +4,14 @@ workspace "roguelike"
 	configurations { "Debug", "Release" }
 
 project "roguelike"
-	kind "ConsoleApp"
+	kind "WindowedApp"
 	language "C"
 	cdialect "C99"
 	files "src/**.c"
 	objdir "bin/%{cfg.buildcfg}/obj"
 	targetdir "bin/%{cfg.buildcfg}"
 
-	buildoptions {
-		"-ffreestanding",
-	}
-
 	linkoptions {
-		"-mwindows",
 		"-nostdlib",
 		"-Wl,-e_display__entry"
 	}
@@ -32,6 +27,7 @@ project "roguelike"
 
 	filter "Release"
 		optimize "Size"
+		flags "LinkTimeOptimization"
 		postbuildcommands {
 			"upx --ultra-brute bin/%{cfg.buildcfg}/%{prj.name}.exe"
 		}

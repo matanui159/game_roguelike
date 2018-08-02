@@ -1,5 +1,6 @@
 #include "display.h"
+#include "stdmem.h"
 
-_Bool dkey(int key) {
-	return key != VK_ESCAPE;
+void dmain(int key, void* data) {
+	
 }

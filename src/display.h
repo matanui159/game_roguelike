@@ -49,8 +49,13 @@
 #define FG_YELLOW 0xE000
 #define FG_WHITE 0xF000
 
+#define VK_INIT 0
+#define VK_DRAW VK_OEM_3
+
 typedef unsigned short tile_t;
+typedef void (*scene_t)(int key, void* data);
 
 tile_t dtile(int x, int y, tile_t clr, tile_t flip);
+void dscene(scene_t scene, void* data);
 
 #endif
