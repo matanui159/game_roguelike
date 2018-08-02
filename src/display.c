@@ -169,17 +169,16 @@ void dscene(scene_t scene, void* data) {
 	if (scene == NULL) {
 		stack_t* prev = g_stack->prev;
 		free(g_stack);
-		g_stack = NULL;
 		g_stack = prev;
 		if (g_stack == NULL) {
 			ExitProcess(0);
 		}
 	} else {
-		stack_t* next = malloc(sizeof(stack_t));
-		next->scene = scene;
-		next->data = data;
-		next->prev = g_stack;
-		g_stack = next;
+		stack_t* prev = g_stack;
+		g_stack = malloc(sizeof(stack_t));
+		g_stack->scene = scene;
+		g_stack->data = data;
+		g_stack->prev = prev;
 		stack_scene(VK_INIT);
 	}
 	stack_scene(VK_DRAW);

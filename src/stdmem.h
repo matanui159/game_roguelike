@@ -1,6 +1,7 @@
 #ifndef STDMEM_H_
 #define STDMEM_H_
-#include <stddef.h>
+
+typedef unsigned int size_t;
 
 void* malloc(size_t size);
 void* realloc(void* ptr, size_t size);
