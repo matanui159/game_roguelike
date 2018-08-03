@@ -143,26 +143,28 @@ tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
 	}
 
 	int index = y * WIDTH + x;
-	tile_t oldt = g_tiles[index];
-	tile_t newt = (oldt & ~clr) ^ flip;
-	g_tiles[index] = newt;
+	tile_t told = g_tiles[index];
+	tile_t tnew = (told & ~clr) ^ flip;
+	g_tiles[index] = tnew;
 
-	SetTextColor(g_windc, g_colors[(newt & TILE_BG) >> 8]);
-	SetBkColor(g_windc, g_colors[(newt & TILE_FG) >> 12]);
-	StretchBlt(
-		g_windc,
-		x * SCALE,
-		y * SCALE,
-		SCALE,
-		SCALE,
-		g_memdc,
-		(newt & TILE_CHAR) * FONT_SIZE,
-		0,
-		FONT_SIZE,
-		FONT_SIZE,
-		SRCCOPY
-	);
-	return oldt;
+	if (tnew != told) {
+		SetTextColor(g_windc, g_colors[(tnew & TILE_BG) >> 8]);
+		SetBkColor(g_windc, g_colors[(tnew & TILE_FG) >> 12]);
+		StretchBlt(
+			g_windc,
+			x * SCALE,
+			y * SCALE,
+			SCALE,
+			SCALE,
+			g_memdc,
+			(tnew & TILE_CHAR) * FONT_SIZE,
+			0,
+			FONT_SIZE,
+			FONT_SIZE,
+			SRCCOPY
+		);
+	}
+	return told;
 }
 
 void dscene(scene_t scene, void* data) {
