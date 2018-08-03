@@ -12,7 +12,7 @@ void map_init() {
 	for (int z = 0; z < MAP_DEPTH; ++z) {
 		for (int y = 0; y < MAP_HEIGHT; ++y) {
 			for (int x = 0; x < MAP_WIDTH; ++x) {
-				int index = (z * MAP_HEIGHT + y) * MAP_WIDTH) + x;
+				int index = (z * MAP_HEIGHT + y * MAP_WIDTH) + x;
 				if (x == 0 || x == MAP_WIDTH - 1 || y == 0 || y == MAP_HEIGHT - 1) {
 					g_map[index].solid = 1;
 				}

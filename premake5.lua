@@ -7,7 +7,7 @@ project "roguelike"
 	kind "WindowedApp"
 	language "C"
 	cdialect "C99"
-	files "src/**.c"
+	files {"src/**.c", "font/src.h"}
 	objdir "bin/%{cfg.buildcfg}/obj"
 	targetdir "bin/%{cfg.buildcfg}"
 
