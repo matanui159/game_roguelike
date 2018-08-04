@@ -1,7 +1,11 @@
-#include "display.h"
 #include "map.h"
+#include "entity.h"
 
 void dmain() {
-	while (dkey() != VK_ESCAPE) {
+	map_create(1);
+	for (;;) {
+		map_draw();
+		entity_draw();
+		entity_update();
 	}
 }

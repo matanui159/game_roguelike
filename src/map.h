@@ -3,10 +3,15 @@
 #include "display.h"
 
 #define MAP_WIDTH WIDTH
-#define MAP_HEIGHT (HEIGHT - 2)
-#define MAP_DEPTH 1
+#define MAP_HEIGHT (HEIGHT - 4)
 
-void map_init();
+typedef struct map_tile_t {
+	_Bool solid:1;
+	_Bool visible:1;
+} map_tile_t;
+
+map_tile_t* map_tile(int x, int y);
+void map_create(int level);
 void map_draw();
 
 #endif

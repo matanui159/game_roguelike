@@ -1,5 +1,6 @@
 #include "display.h"
 #include "../font/src.h"
+#include "stdmem.h"
 
 #define CLASS_NAME "roguelike"
 
