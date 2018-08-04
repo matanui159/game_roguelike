@@ -34,7 +34,7 @@ static void map_light(int dx, int dy, _Bool flip) {
 				if (shadow->used) {
 					shadow->used = 1;
 					if (left >= shadow->left && right <= shadow->right) {
-						tile->visible = 1;
+						tile->visible = 0;
 						break;
 					}
 
@@ -49,6 +49,10 @@ static void map_light(int dx, int dy, _Bool flip) {
 						}
 					}
 				}
+			}
+
+			if (tile->visible) {
+				tile->revealed = 1;
 			}
 
 			if (tile->visible && tile->solid) {
@@ -80,6 +84,7 @@ void map_create(int level) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
 			map_tile_t* tile = map_tile(x, y);
 			tile->solid = 1;
+			tile->revealed = 0;
 		}
 	}
 
@@ -91,16 +96,16 @@ void map_create(int level) {
 		int x = random() * (MAP_WIDTH - w - 2) + 1;
 		int y = random() * (MAP_HEIGHT - h - 2) + 1;
 
-		_Bool empty = 1;
+		_Bool overlap = 0;
 		for (int xx = x - 1; xx < x + w + 1; ++xx) {
 			for (int yy = y - 1; yy < y + h + 1; ++yy) {
 				map_tile_t* tile = map_tile(xx, yy);
 				if (!tile->solid) {
-					empty = 0;
+					overlap = 1;
 				}
 			}
 		}
-		if (!empty) {
+		if (overlap) {
 			continue;
 		}
 		
@@ -157,6 +162,12 @@ void map_draw() {
 			if (tile->visible) {
 				if (tile->solid) {
 					dtile(x, y, TILE_ALL, 0xDB | FG_LGRAY);
+				} else {
+					dtile(x, y, TILE_ALL, 0xB1 | FG_GRAY);
+				}
+			} else if (tile->revealed) {
+				if (tile->solid) {
+					dtile(x, y, TILE_ALL, 0xDB | FG_GRAY);
 				} else {
 					dtile(x, y, TILE_ALL, 0xB0 | FG_GRAY);
 				}

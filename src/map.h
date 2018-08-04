@@ -8,6 +8,7 @@
 typedef struct map_tile_t {
 	_Bool solid:1;
 	_Bool visible:1;
+	_Bool revealed:1;
 } map_tile_t;
 
 map_tile_t* map_tile(int x, int y);
