@@ -5,15 +5,15 @@ static entity_t g_entities[ENTITY_LIMIT];
 
 void entity_clear() {
 	for (int i = 0; i < ENTITY_LIMIT; ++i) {
-		g_entities[i].health = 0;
+		g_entities[i].used = 0;
 	}
 }
 
 entity_t* entity_create() {
 	for (int i = 0; i < ENTITY_LIMIT; ++i) {
 		entity_t* entity = g_entities + i;
-		if (entity->health == 0) {
-			entity->health = 100;
+		if (!entity->used) {
+			entity->used = 1;
 			return entity;
 		}
 	}
@@ -22,10 +22,10 @@ entity_t* entity_create() {
 
 entity_t* entity_get(int i) {
 	entity_t* entity = g_entities + i;
-	if (entity->health == 0) {
-		return NULL;
-	} else {
+	if (entity->used) {
 		return entity;
+	} else {
+		return NULL;
 	}
 }
 
@@ -33,7 +33,7 @@ void entity_draw() {
 	for (int i = 0; i < ENTITY_LIMIT; ++i) {
 		entity_t* entity = entity_get(i);
 		if (entity != NULL && map_tile(entity->x, entity->y)->visible) {
-			dtile(entity->x, entity->y, TILE_ALL, entity->tile);
+			stile(entity->x, entity->y, entity->tile);
 		}
 	}
 }

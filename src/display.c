@@ -1,11 +1,13 @@
 #include "display.h"
 #include "../font/src.h"
-#include "stdmem.h"
 
 #define CLASS_NAME "roguelike"
 
 #define FONT_SIZE 8
 #define SCALE (FONT_SIZE * 3)
+
+#define CHAR_MASK 0x00FF
+#define COLOR_MASK 0x0F00
 
 void dmain();
 
@@ -68,7 +70,7 @@ void display__entry() {
 		instance,
 		NULL,
 		LoadCursor(NULL, IDC_ARROW),
-		CreateSolidBrush(0),
+		NULL,
 		NULL,
 		CLASS_NAME
 	};
@@ -109,11 +111,17 @@ void display__entry() {
 	g_windc = GetDC(g_window);
 	g_memdc = CreateCompatibleDC(g_windc);
 	SelectObject(g_memdc, bitmap);
+	for (int y = 0; y < HEIGHT; ++y) {
+		for (int x = 0; x < WIDTH; ++x) {
+			stile(x, y, COLOR_WHITE);
+		}
+	}
+
 	dmain();
 	ExitProcess(0);
 }
 
-int dkey() {
+int gkey() {
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
 		DispatchMessage(&msg);
@@ -124,19 +132,21 @@ int dkey() {
 	error();
 }
 
-tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
+void stile(int x, int y, tile_t tile) {
 	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
-		return 0;
+		return;
 	}
 
 	int index = y * WIDTH + x;
 	tile_t told = g_tiles[index];
-	tile_t tnew = (told & ~clr) ^ flip;
+	tile_t tnew = tile;
+	if ((tnew & COLOR_MASK) == COLOR_UNCHANGED) {
+		tnew |= told & COLOR_MASK;
+	}
 	g_tiles[index] = tnew;
 
 	if (tnew != told) {
-		SetTextColor(g_windc, g_colors[(tnew & TILE_BG) >> 8]);
-		SetBkColor(g_windc, g_colors[(tnew & TILE_FG) >> 12]);
+		SetBkColor(g_windc, g_colors[(tnew & COLOR_MASK) >> 8]);
 		StretchBlt(
 			g_windc,
 			x * SCALE,
@@ -144,12 +154,20 @@ tile_t dtile(int x, int y, tile_t clr, tile_t flip) {
 			SCALE,
 			SCALE,
 			g_memdc,
-			(tnew & TILE_CHAR) * FONT_SIZE,
+			(tnew & CHAR_MASK) * FONT_SIZE,
 			0,
 			FONT_SIZE,
 			FONT_SIZE,
 			SRCCOPY
 		);
+	} else if (tile == 0) {
+		tile = tile + 1;
 	}
-	return told;
+}
+
+tile_t gtile(int x, int y) {
+	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
+		return COLOR_WHITE;
+	}
+	return g_tiles[y * WIDTH + x];
 }

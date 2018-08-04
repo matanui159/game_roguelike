@@ -4,7 +4,7 @@
 
 static void player_update(entity_t* entity) {
 	for (;;) {
-		switch (dkey()) {
+		switch (gkey()) {
 			case VK_LEFT:
 				entity_move(entity, -1, 0);
 				return;
@@ -28,7 +28,7 @@ static void player_update(entity_t* entity) {
 
 void player_create(int x, int y) {
 	entity_t* entity = entity_create();
-	entity->tile = 0x01 | FG_WHITE;
+	entity->tile = 0x01 | COLOR_WHITE;
 	entity->x = x;
 	entity->y = y;
 	entity->update = player_update;

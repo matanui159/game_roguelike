@@ -9,10 +9,10 @@ typedef struct entity_t entity_t;
 typedef void (*entity_update_t)(entity_t* entity);
 
 typedef struct entity_t {
+	_Bool used;
 	tile_t tile;
 	int x;
 	int y;
-	int health;
 	entity_update_t update;
 } entity_t;
 

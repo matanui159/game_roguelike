@@ -3,7 +3,7 @@
 #include "player.h"
 #include "random.h"
 
-#define SHADOW_LIMIT 29
+#define SHADOW_LIMIT 6
 
 typedef struct shadow_t {
 	_Bool used;
@@ -16,7 +16,7 @@ static map_tile_t g_map[MAP_WIDTH * MAP_HEIGHT];
 static void map_light(int dx, int dy, _Bool flip) {
 	shadow_t shadows[SHADOW_LIMIT] = {0};
 	entity_t* player = entity_get(0);
-	for (int row = 0; row < MAP_WIDTH; ++row) {
+	for (int row = 0; row < 8; ++row) {
 		for (int col = 0; col <= row; ++col) {
 			int x = col;
 			int y = row;
@@ -72,7 +72,10 @@ static void map_light(int dx, int dy, _Bool flip) {
 
 map_tile_t* map_tile(int x, int y) {
 	if (x < 0 || x >= MAP_WIDTH || y < 0 || y >= MAP_HEIGHT) {
-		static map_tile_t empty = {0, 0};
+		static map_tile_t empty;
+		empty.solid = 1;
+		empty.visible = 0;
+		empty.revealed = 0;
 		return &empty;
 	}
 	return g_map + y * MAP_WIDTH + x;
@@ -90,18 +93,18 @@ void map_create(int level) {
 
 	int ex = 0;
 	int ey = 0;
-	for (int i = 0; i < 100; ++i) {
-		int w = random() * 4 + 4;
-		int h = random() * 2 + 2;
-		int x = random() * (MAP_WIDTH - w - 2) + 1;
-		int y = random() * (MAP_HEIGHT - h - 2) + 1;
+	for (int i = 0; i < 32; ++i) {
+		int rw = random() * 4 + 4;
+		int rh = random() * 4 + 4;
+		int rx = random() * (MAP_WIDTH - rw - 2) + 1;
+		int ry = random() * (MAP_HEIGHT - rh - 2) + 1;
 
 		_Bool overlap = 0;
-		for (int xx = x - 1; xx < x + w + 1; ++xx) {
-			for (int yy = y - 1; yy < y + h + 1; ++yy) {
-				map_tile_t* tile = map_tile(xx, yy);
-				if (!tile->solid) {
+		for (int x = rx - 1; x < rx + rw + 1; ++x) {
+			for (int y = ry - 1; y < ry + rh + 1; ++y) {
+				if (!map_tile(x, y)->solid) {
 					overlap = 1;
+					break;
 				}
 			}
 		}
@@ -109,36 +112,33 @@ void map_create(int level) {
 			continue;
 		}
 		
-		for (int xx = x; xx < x + w; ++xx) {
-			for (int yy = y; yy < y + h; ++yy) {
-				map_tile_t* tile = map_tile(xx, yy);
-				tile->solid = 0;
+		for (int x = rx; x < rx + rw; ++x) {
+			for (int y = ry; y < ry + rh; ++y) {
+				map_tile(x, y)->solid = 0;
 			}
 		}
 
 		if (i == 0) {
-			player_create(random() * w + x, random() * h + y);
+			player_create(random() * rw + rx, random() * rh + ry);
 		}
 
-		int bx = random() * w + x;
-		int by = random() * h + y;
+		int bx = random() * rw + rx;
+		int by = random() * rh + ry;
 		if (i > 0) {
 			int dx = 1;
 			if (bx > ex) {
 				dx = -1;
 			}
-			for (int xx = bx; xx != ex; xx += dx) {
-				map_tile_t* tile = map_tile(xx, by);
-				tile->solid = 0;
+			for (int x = bx; x != ex; x += dx) {
+				map_tile(x, by)->solid = 0;
 			}
 
 			int dy = 1;
 			if (by > ey) {
 				dy = -1;
 			}
-			for (int yy = by; yy != ey; yy += dy) {
-				map_tile_t* tile = map_tile(ex, yy);
-				tile->solid = 0;
+			for (int y = by; y != ey; y += dy) {
+				map_tile(ex, y)->solid = 0;
 			}
 		}
 		ex = bx;
@@ -147,6 +147,12 @@ void map_create(int level) {
 }
 
 void map_draw() {
+	for (int y = 0; y < MAP_HEIGHT; ++y) {
+		for (int x = 0; x < MAP_WIDTH; ++x) {
+			map_tile(x, y)->visible = 0;
+		}
+	}
+
 	map_light(1, 1, 0);
 	map_light(1, 1, 1);
 	map_light(1, -1, 1);
@@ -161,18 +167,18 @@ void map_draw() {
 			map_tile_t* tile = map_tile(x, y);
 			if (tile->visible) {
 				if (tile->solid) {
-					dtile(x, y, TILE_ALL, 0xDB | FG_LGRAY);
+					stile(x, y, 0xDB | COLOR_LGRAY);
 				} else {
-					dtile(x, y, TILE_ALL, 0xB1 | FG_GRAY);
+					stile(x, y, 0xB1 | COLOR_GRAY);
 				}
 			} else if (tile->revealed) {
 				if (tile->solid) {
-					dtile(x, y, TILE_ALL, 0xDB | FG_GRAY);
+					stile(x, y, 0xDB | COLOR_GRAY);
 				} else {
-					dtile(x, y, TILE_ALL, 0xB0 | FG_GRAY);
+					stile(x, y, 0xB0 | COLOR_GRAY);
 				}
 			} else {
-				dtile(x, y, TILE_ALL, 0);
+				stile(x, y, 0);
 			}
 		}
 	}
