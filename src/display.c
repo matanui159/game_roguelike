@@ -9,12 +9,13 @@
 #define CHAR_MASK 0x00FF
 #define COLOR_MASK 0x0F00
 
-void dmain();
+void display_main();
 
 static HWND g_window;
 static HDC g_windc;
 static HDC g_memdc;
 static tile_t g_tiles[WIDTH * HEIGHT];
+static _Bool g_sleep;
 
 static const COLORREF g_colors[] = {
 	0x00000000,
@@ -113,26 +114,31 @@ void display__entry() {
 	SelectObject(g_memdc, bitmap);
 	for (int y = 0; y < HEIGHT; ++y) {
 		for (int x = 0; x < WIDTH; ++x) {
-			stile(x, y, COLOR_WHITE);
+			display_set(x, y, 1);
+			display_set(x, y, 0);
 		}
 	}
 
-	dmain();
+	display_main();
 	ExitProcess(0);
 }
 
-int gkey() {
+int display_key() {
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0) {
 		DispatchMessage(&msg);
 		if (msg.message == WM_KEYDOWN) {
-			return msg.wParam;
+			if (msg.wParam == VK_OEM_3) {
+				g_sleep = !g_sleep;
+			} else {
+				return msg.wParam;
+			}
 		}
 	}
 	error();
 }
 
-void stile(int x, int y, tile_t tile) {
+void display_set(int x, int y, tile_t tile) {
 	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
 		return;
 	}
@@ -160,12 +166,15 @@ void stile(int x, int y, tile_t tile) {
 			FONT_SIZE,
 			SRCCOPY
 		);
+		if (g_sleep) {
+			Sleep(2);
+		}
 	} else if (tile == 0) {
 		tile = tile + 1;
 	}
 }
 
-tile_t gtile(int x, int y) {
+tile_t display_get(int x, int y) {
 	if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
 		return COLOR_WHITE;
 	}

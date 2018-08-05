@@ -29,8 +29,8 @@
 
 typedef unsigned short tile_t;
 
-int gkey();
-void stile(int x, int y, tile_t tile);
-tile_t gtile(int x, int y);
+int display_key();
+void display_set(int x, int y, tile_t tile);
+tile_t display_get(int x, int y);
 
 #endif

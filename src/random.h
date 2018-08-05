@@ -1,6 +1,7 @@
 #ifndef RANDOM_H_
 #define RANDOM_H_
 
-float random();
+int random(int limit);
+int random_high(int limit);
 
 #endif

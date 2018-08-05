@@ -1,8 +1,8 @@
 #include "map.h"
-#include "entity.h"
+#include "entity/entity.h"
 
-void dmain() {
-	map_create(1);
+void display_main() {
+	map_create();
 	for (;;) {
 		map_draw();
 		entity_draw();
