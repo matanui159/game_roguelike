@@ -131,10 +131,10 @@ void map_create() {
 		for (int x = rx; x < rx + rw; ++x) {
 			for (int y = ry; y < ry + rh; ++y) {
 				map_get(x, y)->solid = 0;
-				if (i != 0 && random(g_level + 16) < g_level) {
+				if (i != 0 && random(g_level + 32) < g_level) {
 					int level = 8;
 					for (int j = 0; j < g_level; ++j) {
-						level *= 1.25;
+						level += level / 2;
 					}
 					monster_create(x, y, level);
 				}

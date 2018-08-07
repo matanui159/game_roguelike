@@ -167,7 +167,7 @@ void display_set(int x, int y, tile_t tile) {
 			SRCCOPY
 		);
 		if (g_sleep) {
-			Sleep(2);
+			Sleep(1);
 		}
 	} else if (tile == 0) {
 		tile = tile + 1;
