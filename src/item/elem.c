@@ -27,7 +27,7 @@ static const char* g_names[] = {
 elem_t elem_create(int level, int damage) {
 	elem_t elem;
 	elem.type = random(6);
-	elem.level = random(level / 10);
+	elem.level = random(level / 8);
 	if (elem.type == ELEM_NONE || elem.level == 0) {
 		elem.type = ELEM_NONE;
 		elem.damage = 0;

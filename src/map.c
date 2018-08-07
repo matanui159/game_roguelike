@@ -92,12 +92,12 @@ map_tile_t* map_get(int x, int y) {
 }
 
 void map_init() {
-	g_level = 8;
+	g_level = 0;
 	map_create();
 }
 
 void map_create() {
-	g_level *= 1.5;
+	++g_level;
 	entity_clear();
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
@@ -131,8 +131,12 @@ void map_create() {
 		for (int x = rx; x < rx + rw; ++x) {
 			for (int y = ry; y < ry + rh; ++y) {
 				map_get(x, y)->solid = 0;
-				if (i != 0 && random(g_level + 256) < g_level) {
-					monster_create(x, y, g_level);
+				if (i != 0 && random(g_level + 16) < g_level) {
+					int level = 8;
+					for (int j = 0; j < g_level; ++j) {
+						level *= 1.25;
+					}
+					monster_create(x, y, level);
 				}
 			}
 		}
