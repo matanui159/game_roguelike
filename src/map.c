@@ -92,12 +92,12 @@ map_tile_t* map_get(int x, int y) {
 }
 
 void map_init() {
-	g_level = 0;
+	g_level = 8;
 	map_create();
 }
 
 void map_create() {
-	g_level += 10;
+	g_level *= 1.5;
 	entity_clear();
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {

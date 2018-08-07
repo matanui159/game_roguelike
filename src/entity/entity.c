@@ -116,6 +116,7 @@ void entity_move(entity_t* entity, int dx, int dy) {
 }
 
 void entity_damage(entity_t* entity, int damage) {
+	entity_t* player = entity_get(0);
 	if (entity->health > 0) {
 		entity->health -= damage;
 		if (entity->health <= 0) {
@@ -123,7 +124,7 @@ void entity_damage(entity_t* entity, int damage) {
 			entity->elem.type = ELEM_NONE;
 		}
 	} else if (entity->prev_health == 0) {
-		if (entity == entity_get(0)) {
+		if (entity == player) {
 
 			int x = 0;
 			print_string(&x, MAP_HEIGHT, "Game Over", COLOR_RED);
@@ -151,6 +152,7 @@ void entity_damage(entity_t* entity, int damage) {
 			}
 
 		} else {
+			player->score += entity->weapon1.damage + entity->armor.damage;
 			item_t* item = &entity->weapon1;
 			if (random(2) == 0) {
 				item = &entity->armor;

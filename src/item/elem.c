@@ -34,7 +34,7 @@ elem_t elem_create(int level, int damage) {
 		elem.level = 0;
 		elem.color = 0;
 	} else {
-		elem.damage = damage / 10;
+		elem.damage = damage / 8;
 		elem.color = g_colors[elem.type];
 		if (elem.damage == 0) {
 			elem.damage = 1;
@@ -87,12 +87,16 @@ void elem_attack(elem_t* elem, entity_t* entity, entity_t* target) {
 					for (int j = 0; j < ENTITY_LIMIT; ++j) {
 						entity_t* e = entity_get(j);
 						if (e != NULL && e->alive && e != entity && e != target) {
-							int dx = e->x - target->x;
-							int dy = e->y - target->y;
-							if (dx * dx + dy * dy < 16) {
-								++count;
-								if (random(count) == 0) {
-									t = e;
+							if (e->elem.type == ELEM_NONE || e->elem.level == 0) {
+								if (e->health > 0) {
+									int dx = e->x - target->x;
+									int dy = e->y - target->y;
+									if (dx * dx + dy * dy < 16) {
+										++count;
+										if (random(count) == 0) {
+											t = e;
+										}
+									}
 								}
 							}
 						}
@@ -100,7 +104,7 @@ void elem_attack(elem_t* elem, entity_t* entity, entity_t* target) {
 					
 					if (t != NULL) {
 						t->elem = *elem;
-						t->elem.level = 0;
+						t->elem.level = 1;
 						entity_damage(t, elem->damage);
 					}
 				}

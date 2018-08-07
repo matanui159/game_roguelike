@@ -136,6 +136,7 @@ void player_init() {
 
 	entity->health = entity->armor.damage * PLAYER_ARMOR;
 	entity->prev_health = entity->health;
+	entity->score = 0;
 	entity->update = player_update;
 }
 
