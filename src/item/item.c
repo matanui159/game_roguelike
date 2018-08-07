@@ -69,7 +69,5 @@ void item_print(int y, const char* prefix, const item_t* msg, const item_t* cmp)
 
 void item_attack(item_t* item, entity_t* entity, entity_t* target) {
 	entity_damage(target, item->damage);
-	if (target->health > 0) {
-		elem_attack(&item->elem, entity, target);
-	}
+	elem_attack(&item->elem, entity, target);
 }

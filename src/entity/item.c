@@ -7,7 +7,11 @@
 static void item_pickup(entity_t* entity, item_t* slot) {
 	item_t temp = *slot;
 	*slot = entity->weapon1;
-	entity->weapon1 = temp;
+	if (temp.damage == 0) {
+		entity->used = 0;
+	} else {
+		entity->weapon1 = temp;
+	}
 }
 
 static void item_update(entity_t* entity) {

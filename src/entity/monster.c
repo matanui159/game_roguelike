@@ -11,9 +11,7 @@ static int monster_abs(int val) {
 
 static void monster_attack(entity_t* entity, entity_t* player) {
 	item_attack(&entity->weapon1, entity, player);
-	if (entity->elem.type == ELEM_NONE) {
-		elem_attack(&player->armor.elem, player, entity);
-	}
+	elem_attack(&player->armor.elem, player, entity);
 }
 
 static void monster_update(entity_t* entity) {

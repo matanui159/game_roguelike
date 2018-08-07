@@ -21,6 +21,7 @@ typedef struct entity_t {
 	elem_t elem;
 	int health;
 	int prev_health;
+	int score;
 	entity_update_t update;
 } entity_t;
 

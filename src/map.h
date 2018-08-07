@@ -11,6 +11,7 @@ typedef struct map_tile_t {
 } map_tile_t;
 
 map_tile_t* map_get(int x, int y);
+void map_init();
 void map_create();
 void map_draw();
 

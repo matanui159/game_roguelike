@@ -1,7 +1,9 @@
 #include "entity.h"
 #include "item.h"
+#include "player.h"
 #include "../map.h"
 #include "../random.h"
+#include "../print.h"
 
 static entity_t g_entities[ENTITY_LIMIT];
 
@@ -38,6 +40,20 @@ static void entity_draw_layer(_Bool alive) {
 			if (map_get(entity->x, entity->y)->visible) {
 				tile_t tile = entity->tile;
 				if (alive) {
+					if (entity->elem.type != ELEM_NONE) {
+						if (entity->elem.level == 0) {
+							entity->elem.type = ELEM_NONE;
+						} else {
+							if (entity->elem.type == ELEM_FIRE) {
+								entity_damage(entity, entity->elem.damage);
+							}
+							--entity->elem.level;
+							if (i == 0 && entity->elem.type == ELEM_LIGHTNING && entity->elem.level == 0) {
+								entity_damage(entity, entity->elem.damage);
+							}
+						}
+					}
+
 					if (entity->health < entity->prev_health) {
 						int damage = 10 - entity->health * 10 / entity->prev_health;
 						if (damage > 9) {
@@ -52,14 +68,6 @@ static void entity_draw_layer(_Bool alive) {
 						tile = (tile & 0x00FF) | COLOR_RED;
 					} else if (entity->elem.type != ELEM_NONE) {
 						tile = (tile & 0x00FF) | entity->elem.color;
-						if (entity->elem.level > 0) {
-							if (entity->elem.type == ELEM_FIRE) {
-								entity_damage(entity, entity->elem.damage);
-							}
-							--entity->elem.level;
-						} else {
-							entity->elem.type = ELEM_NONE;
-						}
 					}
 				}
 				display_set(entity->x, entity->y, tile);
@@ -83,7 +91,7 @@ void entity_update() {
 }
 
 void entity_move(entity_t* entity, int dx, int dy) {
-	if (entity->elem.type != ELEM_ICE || entity->elem.level == 0) {
+	if (entity->elem.type != ELEM_ICE) {
 		entity->x += dx;
 		entity->y += dy;
 
@@ -115,15 +123,44 @@ void entity_damage(entity_t* entity, int damage) {
 			entity->elem.type = ELEM_NONE;
 		}
 	} else if (entity->prev_health == 0) {
-		item_t* item = &entity->weapon1;
-		if (random(2) == 0) {
-			item = &entity->armor;
+		if (entity == entity_get(0)) {
+
+			int x = 0;
+			print_string(&x, MAP_HEIGHT, "Game Over", COLOR_RED);
+			print_finish(&x, MAP_HEIGHT);
+			x = 0;
+			print_string(&x, MAP_HEIGHT + 1, "Score: ", COLOR_GREEN);
+			print_int(&x, MAP_HEIGHT + 1, entity->score, COLOR_GREEN);
+			print_finish(&x, MAP_HEIGHT + 1);
+			x = 0;
+			print_string(&x, MAP_HEIGHT + 2, "[Z] Restart", COLOR_WHITE);
+			print_finish(&x, MAP_HEIGHT + 2);
+			x = 0;
+			print_string(&x, MAP_HEIGHT + 3, "[X] Quit", COLOR_WHITE);
+			print_finish(&x, MAP_HEIGHT + 3);
+
+			for (;;) {
+				switch (display_key()) {
+					case 'Z':
+						player_init();
+						map_init();
+						return;
+					case 'X':
+						ExitProcess(0);
+				}
+			}
+
+		} else {
+			item_t* item = &entity->weapon1;
+			if (random(2) == 0) {
+				item = &entity->armor;
+			}
+			if (item->elem.type != ELEM_NONE && random(16) == 0) {
+				item->elem.type = ELEM_RANDOM;
+				item->elem.color = COLOR_WHITE;
+			}
+			item_entity_create(entity->x, entity->y, *item);
+			entity->used = 0;
 		}
-		if (item->elem.type != ELEM_NONE && random(16) == 0) {
-			item->elem.type = ELEM_RANDOM;
-			item->elem.color = COLOR_WHITE;
-		}
-		item_entity_create(entity->x, entity->y, *item);
-		entity->used = 0;
 	}
 }

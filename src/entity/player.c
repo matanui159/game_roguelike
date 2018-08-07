@@ -109,31 +109,38 @@ static void player_update(entity_t* entity) {
 	entity->tile = PLAYER_TILE;
 }
 
+static entity_t* player_get() {
+	entity_t* entity = entity_get(0);
+	if (entity == NULL) {
+		entity = entity_create();
+	}
+	return entity;
+}
+
+void player_init() {
+	entity_t* entity = player_get();
+	entity->tile = PLAYER_TILE;
+	entity->alive = 1;
+
+	entity->weapon1.type = ITEM_SWORD;
+	entity->weapon1.damage = 4;
+	entity->weapon1.elem.type = ELEM_NONE;
+
+	entity->weapon2.type = ITEM_BOW;
+	entity->weapon2.damage = 2;
+	entity->weapon2.elem.type = ELEM_NONE;
+
+	entity->armor.type = ITEM_ARMOR;
+	entity->armor.damage = 8;
+	entity->armor.elem.type = ELEM_NONE;
+
+	entity->health = entity->armor.damage * PLAYER_ARMOR;
+	entity->prev_health = entity->health;
+	entity->update = player_update;
+}
+
 void player_create(int x, int y) {
-	static _Bool init = 0;
-	entity_t* entity = entity_create();
+	entity_t* entity = player_get();
 	entity->x = x;
 	entity->y = y;
-
-	if (!init) {
-		entity->tile = PLAYER_TILE;
-		entity->alive = 1;
-
-		entity->weapon1.type = ITEM_SWORD;
-		entity->weapon1.damage = 4;
-		entity->weapon1.elem.type = ELEM_NONE;
-
-		entity->weapon2.type = ITEM_BOW;
-		entity->weapon2.damage = 2;
-		entity->weapon2.elem.type = ELEM_NONE;
-
-		entity->armor.type = ITEM_ARMOR;
-		entity->armor.damage = 8;
-		entity->armor.elem.type = ELEM_NONE;
-
-		entity->health = entity->armor.damage * PLAYER_ARMOR;
-		entity->prev_health = entity->health;
-		entity->update = player_update;
-		init = 1;
-	}
 }

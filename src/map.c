@@ -17,6 +17,7 @@ typedef struct shadow_t {
 } shadow_t;
 
 static map_tile_t g_map[MAP_WIDTH * MAP_HEIGHT];
+static int g_level;
 
 static void map_light(int dx, int dy, _Bool flip) {
 	shadow_t shadows[SHADOW_LIMIT] = {0};
@@ -90,10 +91,13 @@ map_tile_t* map_get(int x, int y) {
 	return g_map + y * MAP_WIDTH + x;
 }
 
-void map_create() {
-	static int level = 0;
-	level += 10;
+void map_init() {
+	g_level = 0;
+	map_create();
+}
 
+void map_create() {
+	g_level += 10;
 	entity_clear();
 	for (int y = 0; y < MAP_HEIGHT; ++y) {
 		for (int x = 0; x < MAP_WIDTH; ++x) {
@@ -127,8 +131,8 @@ void map_create() {
 		for (int x = rx; x < rx + rw; ++x) {
 			for (int y = ry; y < ry + rh; ++y) {
 				map_get(x, y)->solid = 0;
-				if (i != 0 && random(level + 256) < level) {
-					monster_create(x, y, level);
+				if (i != 0 && random(g_level + 256) < g_level) {
+					monster_create(x, y, g_level);
 				}
 			}
 		}

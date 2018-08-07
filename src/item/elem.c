@@ -46,7 +46,7 @@ elem_t elem_create(int level, int damage) {
 void elem_print(int* x, int y, const elem_t* msg, const elem_t* cmp) {
 	if (msg->type != ELEM_NONE) {
 		print_string(x, y, g_names[msg->type], msg->color);
-		if (msg->level >= 0) {
+		if (msg->level > 0) {
 			tile_t color = msg->color;
 			if (cmp != NULL) {
 				if (cmp->level > msg->level) {
@@ -65,17 +65,19 @@ void elem_attack(elem_t* elem, entity_t* entity, entity_t* target) {
 	if (elem->type == ELEM_NONE) {
 		return;
 	}
+	if (target->elem.type != ELEM_NONE && target->elem.level > 0) {
+		return;
+	}
+	if (target->health == 0) {
+		return;
+	}
 	
 	_Bool player = entity == entity_get(0);
 	target->elem = *elem;
 	switch (elem->type) {
 		case ELEM_CRITICAL:
 			entity_damage(target, random(elem->damage * elem->level));
-			target->elem.level = -1;
-			break;
-		case ELEM_FIRE:
-		case ELEM_ICE:
-			++target->elem.level;
+			target->elem.level = 0;
 			break;
 		case ELEM_LIGHTNING:
 			if (player) {
@@ -102,20 +104,23 @@ void elem_attack(elem_t* elem, entity_t* entity, entity_t* target) {
 						entity_damage(t, elem->damage);
 					}
 				}
+				target->elem.level = 0;
+			} else {
+				target->elem.damage *= elem->level;
 			}
-			target->elem.level = -1;
 			break;
 		case ELEM_VAMPIRE:;
 			entity_damage(entity, -elem->damage * elem->level);
-			target->elem.level = -1;
+			target->elem.level = 0;
 			break;
 		case ELEM_RANDOM:;
-			int type = elem->type;
+			target->elem.type = ELEM_NONE;
 			elem->type = random(5) + 1;
 			elem->color = g_colors[elem->type];
 			elem_attack(elem, entity, target);
-			elem->type = type;
-			elem->color = g_colors[type];
-			break;
+			elem->type = ELEM_RANDOM;
+			elem->color = g_colors[elem->type];
+			return;
 	}
+	++target->elem.level;
 }
